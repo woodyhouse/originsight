@@ -1,5 +1,7 @@
 # OriginSight — 原生家庭深度回溯
 
+**🔗 访问地址: [https://woodyhouse.github.io/originsight/](https://woodyhouse.github.io/originsight/)**
+
 > **“看见自己，是改变的开始。”**
 
 OriginSight 是一款基于深度心理学逻辑（依恋理论、萨提亚模式）打造的原生家庭性格测评与自我探索工具。它通过回溯童年关键场景，帮助用户觉察潜意识中的生存策略，并提供定制化的疗愈建议。
