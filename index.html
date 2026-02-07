@@ -1351,7 +1351,7 @@
         setTimeout(() => {
             const maxVal = Math.max(scores.anxiety, scores.avoid, scores.secure, scores.trauma, scores.placate, 8);
             const data = [(scores.anxiety||0)/maxVal, (scores.avoid||0)/maxVal, (scores.placate||0)/maxVal, (scores.trauma||0)/maxVal, (scores.secure||0)/maxVal];
-            drawRadarChart(data);
+            renderRadarChart(data);
             
             // 触发打字机
             typeWriter('monologue-text', monologue, 60);
@@ -1389,6 +1389,28 @@
         }).catch(() => alert("复制失败，请截图分享"));
     }
 
+    let lastRadarData = null;
+    let radarResizeObserver = null;
+
+    function renderRadarChart(data) {
+        lastRadarData = data;
+        requestAnimationFrame(() => drawRadarChart(data));
+        setupRadarResizeObserver();
+    }
+
+    function setupRadarResizeObserver() {
+        const wrapper = document.getElementById('radar-chart')?.parentElement;
+        if (!wrapper || radarResizeObserver || !('ResizeObserver' in window)) return;
+        radarResizeObserver = new ResizeObserver(() => {
+            if (lastRadarData) drawRadarChart(lastRadarData);
+        });
+        radarResizeObserver.observe(wrapper);
+    }
+
+    window.addEventListener('resize', () => {
+        if (lastRadarData) drawRadarChart(lastRadarData);
+    });
+
     function drawRadarChart(data) {
         const canvas = document.getElementById('radar-chart');
         if (!canvas) return;
@@ -1421,8 +1443,16 @@
         ctx.fillStyle = grad; ctx.fill(); ctx.strokeStyle = '#5B7C99'; ctx.lineWidth = 2; ctx.stroke();
 
         ctx.fillStyle = '#fff'; points.forEach(p => { ctx.beginPath(); ctx.arc(p.x,p.y,3,0,Math.PI*2); ctx.fill(); ctx.stroke(); });
-        ctx.fillStyle = '#64748b'; ctx.font = 'bold 12px Noto Serif SC'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        labels.forEach((l, i) => { const a = (Math.PI*2*i)/sides - Math.PI/2; ctx.fillText(l, cx+Math.cos(a)*(radius+20), cy+Math.sin(a)*(radius+20)); });
+        const labelFontSize = Math.max(10, Math.min(12, Math.floor(w / 20)));
+        const labelOffset = Math.min(18, Math.max(8, Math.floor(radius * 0.12)));
+        ctx.fillStyle = '#64748b';
+        ctx.font = `bold ${labelFontSize}px Noto Serif SC`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        labels.forEach((l, i) => {
+            const a = (Math.PI*2*i)/sides - Math.PI/2;
+            ctx.fillText(l, cx + Math.cos(a) * (radius + labelOffset), cy + Math.sin(a) * (radius + labelOffset));
+        });
     }
 
     const wordList = ["回避型依恋", "焦虑型依恋", "抑郁症", "拖延症", "高敏感", "精神内耗", "情感漠视", "性上瘾", "生理性厌恶", "阿斯伯格", "讨好型人格", "习得性无助", "冒充者综合征", "述情障碍", "假性亲密", "共生绞杀", "空心病", "微笑抑郁", "强迫症", "边缘型人格", "煤气灯效应", "暴食症", "被动攻击", "完美主义", "灾难化思维", "亲职化", "情感勒索", "自恋防御", "长不大的父母", "代际创伤"];
