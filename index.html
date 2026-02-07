@@ -597,6 +597,10 @@
             btn.innerText = "查看上次报告";
             btn.onclick = loadSavedReport;
         }
+        const slider = document.getElementById('volume-slider');
+        if (slider) {
+            updateVolumeDisplay(slider.value);
+        }
         for(let i=0; i<6; i++) setTimeout(spawnWord, i * 600);
         setInterval(spawnWord, 1000);
     });
@@ -1702,11 +1706,20 @@
     }
 
     // 放在 <script> 的末尾
+    function updateVolumeDisplay(value) {
+        const volumeValue = document.getElementById('volume-value');
+        const slider = document.getElementById('volume-slider');
+        const percent = Math.round(parseFloat(value) * 100);
+        if (volumeValue) volumeValue.textContent = `${percent}%`;
+        if (slider) slider.setAttribute('aria-valuetext', `${percent}%`);
+    }
+
     function changeVolume(val) {
         const audio = document.getElementById('bg-music');
         if (audio) {
             audio.volume = val;
         }
+        updateVolumeDisplay(val);
         // 拖动滑块时，如果本来是静音，就自动开启声音
         if (AudioEngine.isMuted && val > 0) {
             AudioEngine.toggleMute();
