@@ -159,9 +159,5 @@ window.addEventListener('load', () => {
     const slider = document.getElementById('volume-slider');
     if (slider) {
         updateVolumeDisplay(slider.value);
-        slider.addEventListener('input', (event) => {
-            const { value } = event.target;
-            window.changeVolume(value);
-        });
     }
 });
