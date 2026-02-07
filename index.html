@@ -1349,21 +1349,11 @@
 
         // 触发雷达图 + 打字机特效
         setTimeout(() => {
-            const maxVal = Math.max(scores.anxiety, scores.avoid, scores.secure, scores.trauma, scores.placate, 8);
-            const data = [(scores.anxiety||0)/maxVal, (scores.avoid||0)/maxVal, (scores.placate||0)/maxVal, (scores.trauma||0)/maxVal, (scores.secure||0)/maxVal];
+            const data = normalizeRadarData(scores);
             renderRadarChart(data);
             
             // 触发打字机
             typeWriter('monologue-text', monologue, 60);
-
-            setTimeout(() => {
-                const canvas = document.getElementById('radar-chart');
-                if(canvas) {
-                    const imgData = canvas.toDataURL("image/png");
-                    const posterImg = document.getElementById('poster-radar-img');
-                    if(posterImg) posterImg.src = imgData;
-                }
-            }, 200);
         }, 500); 
 
         localStorage.setItem('originsight_result', JSON.stringify({title, type, scores}));
@@ -1389,26 +1379,69 @@
         }).catch(() => alert("复制失败，请截图分享"));
     }
 
+    const radarDimensionMax = (() => {
+        const maxes = { anxiety: 0, avoid: 0, placate: 0, trauma: 0, secure: 0 };
+        questions.forEach((q) => {
+            const perQuestion = { anxiety: 0, avoid: 0, placate: 0, trauma: 0, secure: 0 };
+            q.options.forEach((opt) => {
+                Object.entries(perQuestion).forEach(([key]) => {
+                    perQuestion[key] = Math.max(perQuestion[key], opt.score?.[key] || 0);
+                });
+            });
+            Object.entries(perQuestion).forEach(([key, val]) => {
+                maxes[key] += val;
+            });
+        });
+        return maxes;
+    })();
     let lastRadarData = null;
     let radarResizeObserver = null;
 
+    function normalizeRadarData(scores) {
+        const safeMax = (key) => Math.max(1, radarDimensionMax[key] || 1);
+        const clamp = (val) => Math.max(0, Math.min(val, 1));
+        return [
+            clamp((scores.anxiety || 0) / safeMax('anxiety')),
+            clamp((scores.avoid || 0) / safeMax('avoid')),
+            clamp((scores.placate || 0) / safeMax('placate')),
+            clamp((scores.trauma || 0) / safeMax('trauma')),
+            clamp((scores.secure || 0) / safeMax('secure')),
+        ];
+    }
+
     function renderRadarChart(data) {
         lastRadarData = data;
-        requestAnimationFrame(() => drawRadarChart(data));
+        requestAnimationFrame(() => {
+            drawRadarChart(data);
+            requestAnimationFrame(updatePosterFromRadar);
+        });
         setupRadarResizeObserver();
+    }
+
+    function updatePosterFromRadar() {
+        const canvas = document.getElementById('radar-chart');
+        if (!canvas) return;
+        const posterImg = document.getElementById('poster-radar-img');
+        if (posterImg) posterImg.src = canvas.toDataURL("image/png");
     }
 
     function setupRadarResizeObserver() {
         const wrapper = document.getElementById('radar-chart')?.parentElement;
         if (!wrapper || radarResizeObserver || !('ResizeObserver' in window)) return;
         radarResizeObserver = new ResizeObserver(() => {
-            if (lastRadarData) drawRadarChart(lastRadarData);
+            if (lastRadarData) {
+                drawRadarChart(lastRadarData);
+                updatePosterFromRadar();
+            }
         });
         radarResizeObserver.observe(wrapper);
     }
 
     window.addEventListener('resize', () => {
-        if (lastRadarData) drawRadarChart(lastRadarData);
+        if (lastRadarData) {
+            drawRadarChart(lastRadarData);
+            updatePosterFromRadar();
+        }
     });
 
     function drawRadarChart(data) {
@@ -1437,7 +1470,7 @@
 
         ctx.beginPath();
         const points = [];
-        data.forEach((val, i) => { const v = Math.max(val, 0.1); const a = (Math.PI*2*i)/sides - Math.PI/2; const x = cx+Math.cos(a)*radius*v, y = cy+Math.sin(a)*radius*v; points.push({x,y}); ctx[i===0?'moveTo':'lineTo'](x,y); });
+        data.forEach((val, i) => { const v = Math.max(val, 0); const a = (Math.PI*2*i)/sides - Math.PI/2; const x = cx+Math.cos(a)*radius*v, y = cy+Math.sin(a)*radius*v; points.push({x,y}); ctx[i===0?'moveTo':'lineTo'](x,y); });
         ctx.closePath();
         const grad = ctx.createRadialGradient(cx,cy,0,cx,cy,radius); grad.addColorStop(0,'rgba(91, 124, 153, 0.6)'); grad.addColorStop(1,'rgba(91, 124, 153, 0.1)');
         ctx.fillStyle = grad; ctx.fill(); ctx.strokeStyle = '#5B7C99'; ctx.lineWidth = 2; ctx.stroke();
