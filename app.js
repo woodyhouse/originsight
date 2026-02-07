@@ -22,7 +22,6 @@
             const iconMute = document.getElementById('icon-mute');
             const iconPlay = document.getElementById('icon-play');
             const audioBtn = document.getElementById('audio-btn');
-            const audioStatus = document.getElementById('audio-status');
 
             if (this.isMuted) {
                 // 静音
@@ -30,7 +29,6 @@
                 if(iconMute) iconMute.classList.remove('hidden');
                 if(iconPlay) iconPlay.classList.add('hidden');
                 if(audioBtn) audioBtn.setAttribute('aria-pressed', 'false');
-                if(audioStatus) audioStatus.textContent = '背景音乐已静音';
             } else {
                 // 播放
                 if(audioTag) {
@@ -52,7 +50,6 @@
                 if(iconMute) iconMute.classList.add('hidden');
                 if(iconPlay) iconPlay.classList.remove('hidden');
                 if(audioBtn) audioBtn.setAttribute('aria-pressed', 'true');
-                if(audioStatus) audioStatus.textContent = '背景音乐正在播放';
             }
         },
 
