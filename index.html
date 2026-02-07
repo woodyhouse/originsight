@@ -1379,27 +1379,33 @@
         }).catch(() => alert("复制失败，请截图分享"));
     }
 
-    const radarWeights = {
-        anxiety: 1.0,
-        avoid: 1.0,
-        placate: 0.85,
-        trauma: 1.1,
-        secure: 1.0,
-    };
-    const radarScaleMax = 40;
+    const radarDimensionMax = (() => {
+        const maxes = { anxiety: 0, avoid: 0, placate: 0, trauma: 0, secure: 0 };
+        questions.forEach((q) => {
+            const perQuestion = { anxiety: 0, avoid: 0, placate: 0, trauma: 0, secure: 0 };
+            q.options.forEach((opt) => {
+                Object.entries(perQuestion).forEach(([key]) => {
+                    perQuestion[key] = Math.max(perQuestion[key], opt.score?.[key] || 0);
+                });
+            });
+            Object.entries(perQuestion).forEach(([key, val]) => {
+                maxes[key] += val;
+            });
+        });
+        return maxes;
+    })();
     let lastRadarData = null;
     let radarResizeObserver = null;
 
     function normalizeRadarData(scores) {
-        const maxWeight = Math.max(...Object.values(radarWeights));
-        const scale = radarScaleMax * maxWeight;
+        const safeMax = (key) => Math.max(1, radarDimensionMax[key] || 1);
         const clamp = (val) => Math.max(0, Math.min(val, 1));
         return [
-            clamp(((scores.anxiety || 0) * radarWeights.anxiety) / scale),
-            clamp(((scores.avoid || 0) * radarWeights.avoid) / scale),
-            clamp(((scores.placate || 0) * radarWeights.placate) / scale),
-            clamp(((scores.trauma || 0) * radarWeights.trauma) / scale),
-            clamp(((scores.secure || 0) * radarWeights.secure) / scale),
+            clamp((scores.anxiety || 0) / safeMax('anxiety')),
+            clamp((scores.avoid || 0) / safeMax('avoid')),
+            clamp((scores.placate || 0) / safeMax('placate')),
+            clamp((scores.trauma || 0) / safeMax('trauma')),
+            clamp((scores.secure || 0) / safeMax('secure')),
         ];
     }
 
