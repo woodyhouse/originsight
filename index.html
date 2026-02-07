@@ -950,6 +950,7 @@ let manual = { dos: [], donts: [] };
 let sevenDays = [];
 
 // 初始化童年场景和信念数据
+        let childhoodScenes = [];
         let beliefData = { oldBeliefs: [], newBeliefs: [], affirmation: "" };
 
 // 数据库定义
@@ -1455,13 +1456,16 @@ const BELIEF_RECONSTRUCTION_DB = {
 
 
         // 确定详细类型
+        let detailedType = 'secure';
         if (type === 'anxiety') {
             detailedType = (scores.placate || 0) > (scores.rescuer || 0) ? 'anxiety_pleaser' : 'anxiety_rescuer';
         } else if (type === 'avoid') {
             detailedType = (scores.superReason || 0) > ((scores.avoid || 0) * 0.5) ? 'avoid_rationalizer' : 'avoid_dismissive';
+        } else if (type === 'fearful') {
+            detailedType = 'fearful';
         }
-        const childhoodScenes = childhoodScenesDB[detailedType] || [];
-        const beliefData = beliefReconstructionDB[detailedType] || { oldBeliefs: [], newBeliefs: [], affirmation: "" };
+        childhoodScenes = CHILDHOOD_SCENES_DB[detailedType] || CHILDHOOD_SCENES_DB.secure;
+        beliefData = BELIEF_RECONSTRUCTION_DB[detailedType] || BELIEF_RECONSTRUCTION_DB.secure;
 
 
         // --- 切换背景音乐 ---
