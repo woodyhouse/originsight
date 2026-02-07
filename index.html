@@ -1403,7 +1403,7 @@
             seed = (seed * 1664525 + 1013904223) % 4294967296;
             return seed / 4294967296;
         };
-        const sampleCount = Math.min(5000, Math.max(1200, questions.length * 200));
+        const sampleCount = 2000;
         radarConfig.forEach(({ key }) => {
             const totals = [];
             for (let i = 0; i < sampleCount; i += 1) {
