@@ -1379,41 +1379,75 @@
         }).catch(() => alert("复制失败，请截图分享"));
     }
 
-    const radarDimensionMax = (() => {
-        const maxes = { anxiety: 0, avoid: 0, placate: 0, trauma: 0, secure: 0 };
+    const radarConfig = [
+        { key: 'anxiety', label: '焦虑' },
+        { key: 'avoid', label: '回避' },
+        { key: 'placate', label: '讨好' },
+        { key: 'trauma', label: '创伤' },
+        { key: 'secure', label: '安全' },
+        { key: 'superReason', label: '超理智' },
+        { key: 'shame', label: '羞耻' },
+    ];
+
+    const radarDimensionStats = (() => {
+        const stats = Object.fromEntries(
+            radarConfig.map(({ key }) => [key, { max: 0, mean: 0, variance: 0, std: 0 }])
+        );
         questions.forEach((q) => {
-            const perQuestion = { anxiety: 0, avoid: 0, placate: 0, trauma: 0, secure: 0 };
-            q.options.forEach((opt) => {
-                Object.entries(perQuestion).forEach(([key]) => {
-                    perQuestion[key] = Math.max(perQuestion[key], opt.score?.[key] || 0);
-                });
-            });
-            Object.entries(perQuestion).forEach(([key, val]) => {
-                maxes[key] += val;
+            radarConfig.forEach(({ key }) => {
+                const scores = q.options.map((opt) => opt.score?.[key] || 0);
+                const max = Math.max(...scores);
+                const mean = scores.reduce((sum, val) => sum + val, 0) / scores.length;
+                const variance = scores.reduce((sum, val) => sum + (val - mean) ** 2, 0) / scores.length;
+                stats[key].max += max;
+                stats[key].mean += mean;
+                stats[key].variance += variance;
             });
         });
-        return maxes;
+        Object.values(stats).forEach((stat) => {
+            stat.std = Math.sqrt(stat.variance);
+        });
+        return stats;
     })();
     let lastRadarData = null;
     let radarResizeObserver = null;
 
+    function erf(x) {
+        const sign = x >= 0 ? 1 : -1;
+        const a1 = 0.254829592;
+        const a2 = -0.284496736;
+        const a3 = 1.421413741;
+        const a4 = -1.453152027;
+        const a5 = 1.061405429;
+        const p = 0.3275911;
+        const absX = Math.abs(x);
+        const t = 1 / (1 + p * absX);
+        const y = 1 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-absX * absX);
+        return sign * y;
+    }
+
+    function normalCdf(z) {
+        return 0.5 * (1 + erf(z / Math.SQRT2));
+    }
+
     function normalizeRadarData(scores) {
-        const safeMax = (key) => Math.max(1, radarDimensionMax[key] || 1);
         const clamp = (val) => Math.max(0, Math.min(val, 1));
-        return [
-            clamp((scores.anxiety || 0) / safeMax('anxiety')),
-            clamp((scores.avoid || 0) / safeMax('avoid')),
-            clamp((scores.placate || 0) / safeMax('placate')),
-            clamp((scores.trauma || 0) / safeMax('trauma')),
-            clamp((scores.secure || 0) / safeMax('secure')),
-        ];
+        return radarConfig.map(({ key }) => {
+            const stat = radarDimensionStats[key];
+            const raw = scores[key] || 0;
+            if (!stat || stat.std === 0) {
+                const safeMax = Math.max(1, stat?.max || 1);
+                return clamp(raw / safeMax);
+            }
+            const z = (raw - stat.mean) / stat.std;
+            return clamp(normalCdf(z));
+        });
     }
 
     function renderRadarChart(data) {
         lastRadarData = data;
         requestAnimationFrame(() => {
             drawRadarChart(data);
-            requestAnimationFrame(updatePosterFromRadar);
         });
         setupRadarResizeObserver();
     }
@@ -1431,7 +1465,6 @@
         radarResizeObserver = new ResizeObserver(() => {
             if (lastRadarData) {
                 drawRadarChart(lastRadarData);
-                updatePosterFromRadar();
             }
         });
         radarResizeObserver.observe(wrapper);
@@ -1440,7 +1473,6 @@
     window.addEventListener('resize', () => {
         if (lastRadarData) {
             drawRadarChart(lastRadarData);
-            updatePosterFromRadar();
         }
     });
 
@@ -1460,7 +1492,8 @@
         const cx = w / 2;
         const cy = h / 2;
         const radius = Math.min(w, h) / 2 - 26;
-        const sides = 5, labels = ['焦虑', '回避', '讨好', '创伤', '安全'];
+        const sides = radarConfig.length;
+        const labels = radarConfig.map(({ label }) => label);
         
         ctx.clearRect(0,0,w,h);
         ctx.strokeStyle = 'rgba(200, 200, 200, 0.4)'; ctx.lineWidth = 1;
@@ -1556,6 +1589,8 @@
         const btn = document.querySelector('button[onclick="generateImage()"] span:last-child');
         const originalText = btn.innerText;
         btn.innerText = "生成中...";
+
+        updatePosterFromRadar();
 
         html2canvas(posterEl, {
             scale: 2, // 2倍清晰度
