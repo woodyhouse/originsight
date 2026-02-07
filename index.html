@@ -21,7 +21,7 @@
     }
 </script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer>
 
 </script>
 
@@ -128,15 +128,15 @@
         <div class="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3 cursor-pointer group" onclick="location.reload()">
                 <div class="w-12 h-12 relative overflow-hidden rounded-full border-2 border-[#2c3e50]/10 group-hover:border-[#5B7C99] transition-all duration-300 bg-white shadow-sm p-0.5">
-                    <img src="./images/logo-silhouette.png" alt="Logo" class="w-full h-full object-cover object-center scale-115 group-hover:scale-125 transition-transform duration-500">
+                    <img src="./images/logo-silhouette.png" alt="OriginSight Logo" loading="lazy" class="w-full h-full object-cover object-center scale-115 group-hover:scale-125 transition-transform duration-500">
                 </div>
                 <span class="font-bold tracking-tight text-xl text-[#2c3e50] serif group-hover:text-[#5B7C99] transition-colors">OriginSight</span>
             </div>
             
             <div class="flex items-center gap-4">
                 <div class="hidden md:flex items-center gap-6 text-sm text-gray-500 font-medium">
-                    <button onclick="openPage('page-theory')" class="hover:text-[#5B7C99] transition">理论溯源</button>
-                    <button onclick="openPage('page-privacy')" class="hover:text-[#5B7C99] transition">关于隐私</button>
+                    <button type="button" onclick="openPage('page-theory')" class="hover:text-[#5B7C99] transition">理论溯源</button>
+                    <button type="button" onclick="openPage('page-privacy')" class="hover:text-[#5B7C99] transition">关于隐私</button>
                 </div>
                 
                 <div class="flex items-center gap-2 group bg-white/50 backdrop-blur-sm rounded-full pl-1 pr-3 py-1 border border-gray-300 hover:border-[#5B7C99] transition-all duration-300">
@@ -196,7 +196,7 @@
 
     <section id="page-theory" class="hidden pt-24 pb-20 px-6 min-h-screen">
         <div class="max-w-3xl mx-auto bg-white/80 backdrop-blur-md rounded-3xl p-8 md:p-12 shadow-xl border border-white/60">
-            <button onclick="closeOverlay('page-theory')" class="mb-6 text-sm text-[#5B7C99] hover:underline flex items-center gap-1">
+            <button type="button" onclick="closeOverlay('page-theory')" class="mb-6 text-sm text-[#5B7C99] hover:underline flex items-center gap-1">
                 ← 返回
             </button>
             <h2 class="text-3xl font-bold text-[#2c3e50] mb-8 serif">理论基石</h2>
@@ -220,7 +220,7 @@
 
     <section id="page-privacy" class="hidden pt-24 pb-20 px-6 min-h-screen">
         <div class="max-w-3xl mx-auto bg-white/80 backdrop-blur-md rounded-3xl p-8 md:p-12 shadow-xl border border-white/60">
-            <button onclick="closeOverlay('page-privacy')" class="mb-6 text-sm text-[#5B7C99] hover:underline flex items-center gap-1">
+            <button type="button" onclick="closeOverlay('page-privacy')" class="mb-6 text-sm text-[#5B7C99] hover:underline flex items-center gap-1">
                 ← 返回
             </button>
             <h2 class="text-3xl font-bold text-[#2c3e50] mb-8 serif">隐私承诺</h2>
@@ -1334,17 +1334,17 @@
 
             <div class="flex flex-col items-center gap-6 pb-20 fade-in-up delay-300">
                 <div class="flex gap-4">
-                    <button onclick="generateImage()" class="group relative bg-[#2c3e50] text-white px-8 py-3.5 rounded-full font-bold shadow-xl hover:bg-[#5B7C99] transition-all duration-300 transform hover:-translate-y-1 active:scale-95 flex items-center gap-2"><span class="text-lg">📸</span><span>生成心灵画像卡片</span></button>
-                    <button onclick="location.reload()" class="px-6 py-3.5 rounded-full border border-gray-300 text-gray-500 hover:border-[#5B7C99] hover:text-[#5B7C99] transition font-medium text-sm">重新测试</button>
+                    <button type="button" onclick="generateImage()" class="group relative bg-[#2c3e50] text-white px-8 py-3.5 rounded-full font-bold shadow-xl hover:bg-[#5B7C99] transition-all duration-300 transform hover:-translate-y-1 active:scale-95 flex items-center gap-2"><span class="text-lg">📸</span><span>生成心灵画像卡片</span></button>
+                    <button type="button" onclick="location.reload()" class="px-6 py-3.5 rounded-full border border-gray-300 text-gray-500 hover:border-[#5B7C99] hover:text-[#5B7C99] transition font-medium text-sm">重新测试</button>
                 </div>
             </div>
             
             <div id="share-poster" class="fixed top-[-9999px] left-[-9999px] w-[375px] bg-[#F9F8F6] p-8 rounded-none text-center pointer-events-none">
-                <div class="mb-6 flex justify-center"><img src="./images/logo-silhouette.png" class="w-12 h-12 rounded-full border-2 border-[#2c3e50]/10"></div>
+                <div class="mb-6 flex justify-center"><img src="./images/logo-silhouette.png" alt="OriginSight Logo" loading="lazy" class="w-12 h-12 rounded-full border-2 border-[#2c3e50]/10"></div>
                 <div class="text-xs tracking-[0.3em] text-gray-400 uppercase mb-2">OriginSight Profile</div>
                 <h2 class="text-2xl font-bold text-[#2c3e50] mb-2 serif">${title}</h2>
                 <p class="text-xs text-[#5B7C99] mb-6 font-mono">${new Date().toLocaleDateString()}</p>
-                <div class="w-full aspect-square bg-white/50 rounded-full flex items-center justify-center mb-6 relative overflow-hidden"><img id="poster-radar-img" class="w-full h-full object-contain p-4" /></div>
+                <div class="w-full aspect-square bg-white/50 rounded-full flex items-center justify-center mb-6 relative overflow-hidden"><img id="poster-radar-img" alt="OriginSight radar chart" class="w-full h-full object-contain p-4" /></div>
                 <div class="text-left bg-white p-5 rounded-xl shadow-sm mb-6 border border-gray-100"><p class="text-sm text-gray-600 leading-relaxed font-serif italic">“${monologue.replace(/“|”/g, '')}”</p></div>
                 <div class="text-left mb-6"><h4 class="font-bold text-[#2c3e50] text-xs mb-2">📝 如何爱我 (User Manual)</h4><div class="bg-white p-4 rounded-xl border border-gray-100 text-xs text-gray-600 space-y-1"><p>✅ ${manual.dos[0]}</p><p>✅ ${manual.dos[1]}</p><p>🚫 ${manual.donts[0]}</p></div></div>
                 <div class="grid grid-cols-2 gap-3 mb-8"><div class="bg-blue-50 p-3 rounded-lg text-left"><span class="text-[10px] text-gray-400 block">焦虑指数</span><span class="font-bold text-[#2c3e50]">${scores.anxiety}</span></div><div class="bg-blue-50 p-3 rounded-lg text-left"><span class="text-[10px] text-gray-400 block">回避指数</span><span class="font-bold text-[#2c3e50]">${scores.avoid}</span></div></div>
