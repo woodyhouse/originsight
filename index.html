@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="description" content="OriginSight 原生家庭深度回溯测评，探索童年经历对性格的影响，生成专属心理画像。">
 <title>OriginSight — 原生家庭深度回溯</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
@@ -24,6 +25,8 @@
 
 </script>
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
 <style>
     body { font-family: 'Inter', -apple-system, sans-serif; transition: background-color 0.5s; background-color: #F9F8F6; color: #2c3e50; }
@@ -98,6 +101,15 @@
         50% { opacity: 1; transform: translateY(-20px) scale(1) rotate(-2deg); filter: blur(0); }
         100% { opacity: 0; transform: translateY(80px) scale(0.9) rotate(4deg); filter: blur(8px); }
     }
+
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
 </style>
 </head>
 <body class="antialiased min-h-screen flex flex-col overflow-x-hidden text-[#2c3e50]">
@@ -128,17 +140,17 @@
                 </div>
                 
                 <div class="flex items-center gap-2 group bg-white/50 backdrop-blur-sm rounded-full pl-1 pr-3 py-1 border border-gray-300 hover:border-[#5B7C99] transition-all duration-300">
-                    <button id="audio-btn" onclick="toggleAudio()" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-[#5B7C99] transition" title="静音/播放">
+                    <button id="audio-btn" type="button" onclick="toggleAudio()" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-[#5B7C99] transition" title="静音/播放" aria-pressed="false" aria-label="切换背景音乐播放">
                         <svg id="icon-mute" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>
                         <svg id="icon-play" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>
                     </button>
                     
                     <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.2" 
                     class="w-16 h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-[#5B7C99] opacity-50 group-hover:opacity-100 transition-opacity" 
-                    oninput="changeVolume(this.value)">
+                    oninput="changeVolume(this.value)" aria-label="背景音乐音量">
                 </div>
 
-                <button onclick="startQuiz()" id="nav-btn" class="text-sm bg-[#2c3e50] text-white px-5 py-2 rounded-full hover:bg-[#5B7C99] transition shadow-lg shadow-gray-200">开始探索</button>
+                <button type="button" onclick="startQuiz()" id="nav-btn" class="text-sm bg-[#2c3e50] text-white px-5 py-2 rounded-full hover:bg-[#5B7C99] transition shadow-lg shadow-gray-200">开始探索</button>
             </div>
         </div>
     </nav>
@@ -154,7 +166,7 @@
         </div>
         
         <div class="fade-in-up delay-100 flex flex-col sm:flex-row gap-4">
-            <button onclick="startQuiz()" class="bg-[#5B7C99] text-white text-lg px-10 py-4 rounded-full font-medium hover:bg-[#4a6b8a] transition shadow-xl shadow-blue-900/10 transform hover:scale-105 duration-300">
+            <button type="button" onclick="startQuiz()" class="bg-[#5B7C99] text-white text-lg px-10 py-4 rounded-full font-medium hover:bg-[#4a6b8a] transition shadow-xl shadow-blue-900/10 transform hover:scale-105 duration-300">
                 开始深度测评
             </button>
         </div>
@@ -249,12 +261,14 @@
             const audioTag = document.getElementById('bg-music');
             const iconMute = document.getElementById('icon-mute');
             const iconPlay = document.getElementById('icon-play');
+            const audioBtn = document.getElementById('audio-btn');
 
             if (this.isMuted) {
                 // 静音
                 if(audioTag) audioTag.pause();
                 if(iconMute) iconMute.classList.remove('hidden');
                 if(iconPlay) iconPlay.classList.add('hidden');
+                if(audioBtn) audioBtn.setAttribute('aria-pressed', 'false');
             } else {
                 // 播放
                 if(audioTag) {
@@ -275,6 +289,7 @@
 
                 if(iconMute) iconMute.classList.add('hidden');
                 if(iconPlay) iconPlay.classList.remove('hidden');
+                if(audioBtn) audioBtn.setAttribute('aria-pressed', 'true');
             }
         },
 
@@ -1161,15 +1176,13 @@
         }
 
         // --- 评分条 ---
-        const scoreBars = [
-            { k: 'anxiety', label: '焦虑', color: 'bg-red-400' },
-            { k: 'avoid', label: '回避', color: 'bg-blue-400' },
-            { k: 'secure', label: '安全', color: 'bg-green-400' },
-            { k: 'trauma', label: '创伤', color: 'bg-purple-400' }
-        ].map(item => {
-            const val = scores[item.k] || 0;
-            const percent = Math.min((val / 40) * 100, 100); 
-            return `<div class="mb-2 last:mb-0"><div class="flex justify-between text-[10px] text-gray-500 mb-0.5 font-medium"><span>${item.label}</span><span>${val}</span></div><div class="h-1 w-full bg-gray-100 rounded-full overflow-hidden"><div class="h-full ${item.color} opacity-80" style="width: ${percent}%"></div></div></div>`;
+        const scoreBarPalette = ['bg-red-400', 'bg-blue-400', 'bg-green-400', 'bg-purple-400', 'bg-amber-400', 'bg-teal-400', 'bg-rose-400'];
+        const scoreBars = radarConfig.map((item, index) => {
+            const val = scores[item.key] || 0;
+            const stat = radarDimensionStats[item.key];
+            const percent = stat ? Math.min((val / Math.max(1, stat.max || 1)) * 100, 100) : 0;
+            const color = scoreBarPalette[index % scoreBarPalette.length];
+            return `<div class="mb-2 last:mb-0"><div class="flex justify-between text-[10px] text-gray-500 mb-0.5 font-medium"><span>${item.label}</span><span>${val}</span></div><div class="h-1 w-full bg-gray-100 rounded-full overflow-hidden"><div class="h-full ${color} opacity-80" style="width: ${percent}%"></div></div></div>`;
         }).join('');
 
         // --- 读取七日计划进度 (Memory) ---
@@ -1191,7 +1204,9 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8 fade-in-up delay-100">
                 <div class="lg:col-span-4 flex flex-col gap-4 h-full">
                     <div class="bg-white/60 backdrop-blur-md rounded-3xl p-6 shadow-lg shadow-gray-200/50 flex flex-col items-center border border-white/60 flex-1">
-                        <div class="relative w-full aspect-square max-w-[260px] mb-4"><canvas id="radar-chart" width="300" height="300"></canvas></div>
+                        <div class="relative w-full aspect-square max-w-[260px] mb-4 overflow-hidden">
+                            <canvas id="radar-chart" class="block w-full h-full"></canvas>
+                        </div>
                         
                         <div class="w-full mb-4 flex flex-wrap justify-center content-start min-h-[60px]">
                             ${tagsHTML}
@@ -1332,21 +1347,11 @@
 
         // 触发雷达图 + 打字机特效
         setTimeout(() => {
-            const maxVal = Math.max(scores.anxiety, scores.avoid, scores.secure, scores.trauma, scores.placate, 8);
-            const data = [(scores.anxiety||0)/maxVal, (scores.avoid||0)/maxVal, (scores.placate||0)/maxVal, (scores.trauma||0)/maxVal, (scores.secure||0)/maxVal];
-            drawRadarChart(data);
+            const data = normalizeRadarData(scores);
+            renderRadarChart(data);
             
             // 触发打字机
             typeWriter('monologue-text', monologue, 60);
-
-            setTimeout(() => {
-                const canvas = document.getElementById('radar-chart');
-                if(canvas) {
-                    const imgData = canvas.toDataURL("image/png");
-                    const posterImg = document.getElementById('poster-radar-img');
-                    if(posterImg) posterImg.src = imgData;
-                }
-            }, 200);
         }, 500); 
 
         localStorage.setItem('originsight_result', JSON.stringify({title, type, scores}));
@@ -1372,6 +1377,112 @@
         }).catch(() => alert("复制失败，请截图分享"));
     }
 
+    const radarConfig = [
+        { key: 'anxiety', label: '焦虑' },
+        { key: 'avoid', label: '回避' },
+        { key: 'placate', label: '讨好' },
+        { key: 'trauma', label: '创伤' },
+        { key: 'secure', label: '安全' },
+        { key: 'superReason', label: '超理智' },
+        { key: 'shame', label: '羞耻' },
+    ];
+
+    const radarDimensionStats = (() => {
+        const stats = Object.fromEntries(
+            radarConfig.map(({ key }) => [key, { max: 0, samples: [] }])
+        );
+        questions.forEach((q) => {
+            radarConfig.forEach(({ key }) => {
+                const scores = q.options.map((opt) => opt.score?.[key] || 0);
+                stats[key].max += Math.max(...scores);
+            });
+        });
+
+        let seed = 42;
+        const rand = () => {
+            seed = (seed * 1664525 + 1013904223) % 4294967296;
+            return seed / 4294967296;
+        };
+        const sampleCount = Math.min(5000, Math.max(1200, questions.length * 200));
+        radarConfig.forEach(({ key }) => {
+            const totals = [];
+            for (let i = 0; i < sampleCount; i += 1) {
+                let total = 0;
+                questions.forEach((q) => {
+                    const idx = Math.floor(rand() * q.options.length);
+                    total += q.options[idx].score?.[key] || 0;
+                });
+                totals.push(total);
+            }
+            totals.sort((a, b) => a - b);
+            stats[key].samples = totals;
+        });
+        return stats;
+    })();
+    let lastRadarData = null;
+    let radarResizeObserver = null;
+
+    function percentileFromSamples(samples, value) {
+        if (!samples.length) return 0;
+        let low = 0;
+        let high = samples.length;
+        while (low < high) {
+            const mid = Math.floor((low + high) / 2);
+            if (samples[mid] <= value) {
+                low = mid + 1;
+            } else {
+                high = mid;
+            }
+        }
+        return low / samples.length;
+    }
+
+    function normalizeRadarData(scores) {
+        const clamp = (val) => Math.max(0, Math.min(val, 1));
+        return radarConfig.map(({ key }) => {
+            const stat = radarDimensionStats[key];
+            const raw = scores[key] || 0;
+            if (!stat) return 0;
+            if (stat.samples.length) {
+                return clamp(percentileFromSamples(stat.samples, raw));
+            }
+            const safeMax = Math.max(1, stat.max || 1);
+            return clamp(raw / safeMax);
+        });
+    }
+
+    function renderRadarChart(data) {
+        lastRadarData = data;
+        requestAnimationFrame(() => {
+            drawRadarChart(data);
+        });
+        setupRadarResizeObserver();
+    }
+
+    function updatePosterFromRadar() {
+        const canvas = document.getElementById('radar-chart');
+        if (!canvas) return;
+        const posterImg = document.getElementById('poster-radar-img');
+        if (posterImg) posterImg.src = canvas.toDataURL("image/png");
+    }
+
+    function setupRadarResizeObserver() {
+        const wrapper = document.getElementById('radar-chart')?.parentElement;
+        if (!wrapper || radarResizeObserver || !('ResizeObserver' in window)) return;
+        radarResizeObserver = new ResizeObserver(() => {
+            if (lastRadarData) {
+                drawRadarChart(lastRadarData);
+            }
+        });
+        radarResizeObserver.observe(wrapper);
+    }
+
+    window.addEventListener('resize', () => {
+        if (lastRadarData) {
+            drawRadarChart(lastRadarData);
+        }
+    });
+
     function drawRadarChart(data) {
         const canvas = document.getElementById('radar-chart');
         if (!canvas) return;
@@ -1379,10 +1490,17 @@
         const dpr = window.devicePixelRatio || 1;
         const rect = canvas.getBoundingClientRect();
         if(rect.width === 0) return;
-        canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.scale(dpr, dpr);
-        const w = rect.width, h = rect.height, cx = w/2, cy = h/2, radius = w/2 - 30;
-        const sides = 5, labels = ['焦虑', '回避', '讨好', '创伤', '安全'];
+        const w = rect.width;
+        const h = rect.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const radius = Math.min(w, h) / 2 - 26;
+        const sides = radarConfig.length;
+        const labels = radarConfig.map(({ label }) => label);
         
         ctx.clearRect(0,0,w,h);
         ctx.strokeStyle = 'rgba(200, 200, 200, 0.4)'; ctx.lineWidth = 1;
@@ -1392,14 +1510,24 @@
 
         ctx.beginPath();
         const points = [];
-        data.forEach((val, i) => { const v = Math.max(val, 0.1); const a = (Math.PI*2*i)/sides - Math.PI/2; const x = cx+Math.cos(a)*radius*v, y = cy+Math.sin(a)*radius*v; points.push({x,y}); ctx[i===0?'moveTo':'lineTo'](x,y); });
+        data.forEach((val, i) => { const v = Math.max(val, 0); const a = (Math.PI*2*i)/sides - Math.PI/2; const x = cx+Math.cos(a)*radius*v, y = cy+Math.sin(a)*radius*v; points.push({x,y}); ctx[i===0?'moveTo':'lineTo'](x,y); });
         ctx.closePath();
         const grad = ctx.createRadialGradient(cx,cy,0,cx,cy,radius); grad.addColorStop(0,'rgba(91, 124, 153, 0.6)'); grad.addColorStop(1,'rgba(91, 124, 153, 0.1)');
         ctx.fillStyle = grad; ctx.fill(); ctx.strokeStyle = '#5B7C99'; ctx.lineWidth = 2; ctx.stroke();
 
         ctx.fillStyle = '#fff'; points.forEach(p => { ctx.beginPath(); ctx.arc(p.x,p.y,3,0,Math.PI*2); ctx.fill(); ctx.stroke(); });
-        ctx.fillStyle = '#64748b'; ctx.font = 'bold 12px Noto Serif SC'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        labels.forEach((l, i) => { const a = (Math.PI*2*i)/sides - Math.PI/2; ctx.fillText(l, cx+Math.cos(a)*(radius+20), cy+Math.sin(a)*(radius+20)); });
+        const labelFontSize = Math.max(9, Math.min(12, Math.floor(w / (sides + 6))));
+        const labelOffset = Math.min(16, Math.max(6, Math.floor(radius * 0.1)));
+        ctx.fillStyle = '#64748b';
+        ctx.font = `bold ${labelFontSize}px Noto Serif SC`;
+        ctx.textBaseline = 'middle';
+        labels.forEach((l, i) => {
+            const a = (Math.PI*2*i)/sides - Math.PI/2;
+            const cos = Math.cos(a);
+            const sin = Math.sin(a);
+            ctx.textAlign = cos > 0.2 ? 'left' : cos < -0.2 ? 'right' : 'center';
+            ctx.fillText(l, cx + cos * (radius + labelOffset), cy + sin * (radius + labelOffset));
+        });
     }
 
     const wordList = ["回避型依恋", "焦虑型依恋", "抑郁症", "拖延症", "高敏感", "精神内耗", "情感漠视", "性上瘾", "生理性厌恶", "阿斯伯格", "讨好型人格", "习得性无助", "冒充者综合征", "述情障碍", "假性亲密", "共生绞杀", "空心病", "微笑抑郁", "强迫症", "边缘型人格", "煤气灯效应", "暴食症", "被动攻击", "完美主义", "灾难化思维", "亲职化", "情感勒索", "自恋防御", "长不大的父母", "代际创伤"];
@@ -1470,6 +1598,8 @@
         const btn = document.querySelector('button[onclick="generateImage()"] span:last-child');
         const originalText = btn.innerText;
         btn.innerText = "生成中...";
+
+        updatePosterFromRadar();
 
         html2canvas(posterEl, {
             scale: 2, // 2倍清晰度
