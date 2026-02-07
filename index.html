@@ -145,6 +145,7 @@
                         <svg id="icon-play" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>
                     </button>
                     <span id="audio-status" class="sr-only" role="status" aria-live="polite">背景音乐已静音</span>
+                    <span id="audio-status-visible" class="text-[10px] text-gray-400 tabular-nums" aria-hidden="true">静音</span>
                     
                     <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.2" 
                     class="w-16 h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-[#5B7C99] opacity-50 group-hover:opacity-100 transition-opacity" 
@@ -242,6 +243,9 @@
     </section>
     </main>
 <script>
+    // =========================
+    // 音频引擎 (Web Audio API)
+    // =========================
     // ================= 纯代码音频合成引擎 (Web Audio API) =================
     // 不需要任何外部文件，直接用代码生成白噪音
     // ================= 混合音频引擎 (MP3背景乐 + WebAudio音效) =================
@@ -266,6 +270,8 @@
             const iconMute = document.getElementById('icon-mute');
             const iconPlay = document.getElementById('icon-play');
             const audioBtn = document.getElementById('audio-btn');
+            const audioStatus = document.getElementById('audio-status');
+            const audioStatusVisible = document.getElementById('audio-status-visible');
 
             if (this.isMuted) {
                 // 静音
@@ -273,6 +279,8 @@
                 if(iconMute) iconMute.classList.remove('hidden');
                 if(iconPlay) iconPlay.classList.add('hidden');
                 if(audioBtn) audioBtn.setAttribute('aria-pressed', 'false');
+                if(audioStatus) audioStatus.textContent = '背景音乐已静音';
+                if(audioStatusVisible) audioStatusVisible.textContent = '静音';
             } else {
                 // 播放
                 if(audioTag) {
@@ -294,6 +302,8 @@
                 if(iconMute) iconMute.classList.add('hidden');
                 if(iconPlay) iconPlay.classList.remove('hidden');
                 if(audioBtn) audioBtn.setAttribute('aria-pressed', 'true');
+                if(audioStatus) audioStatus.textContent = '背景音乐正在播放';
+                if(audioStatusVisible) audioStatusVisible.textContent = '播放';
             }
         },
 
@@ -359,7 +369,9 @@
         },
     };
 
-// --- 题库 v5.0：灵魂拷问版 (基于“奇幻日”深度逻辑) ---
+// =========================
+// 题库 v5.0：灵魂拷问版
+// =========================
     const questions = [
         // ==================== 第一阶段：生存策略与家庭结构 (The Imprint) ====================
         { 
@@ -584,9 +596,94 @@
         }
     ];
 
-    // --- 答题引擎 v2.0 (多选支持版) ---
+    // =========================
+    // 评分维度与阶段配置
+    // =========================
+    const STAGE_DEFINITIONS = [
+        { id: 'imprint', label: '生存策略', range: [1, 6] },
+        { id: 'pattern', label: '成年投射', range: [7, 12] },
+        { id: 'reconstruction', label: '自我重构', range: [13, 18] },
+    ];
+
+    const REQUIRED_SCORE_KEYS = [
+        'secure',
+        'anxiety',
+        'avoid',
+        'trauma',
+        'placate',
+        'superReason',
+        'shame',
+        'sentinel',
+        'spiritualHusband',
+        'aliveCarrier',
+        'blame',
+        'distract',
+        'intrusion',
+        'neglect',
+    ];
+
+    const SCORE_KEYS = Array.from(new Set([
+        ...questions.flatMap((q) => q.options.flatMap((opt) => Object.keys(opt.score || {}))),
+        ...REQUIRED_SCORE_KEYS,
+    ]));
+
+    const DIMENSION_WEIGHTS = Object.fromEntries(
+        SCORE_KEYS.map((key) => [key, 1])
+    );
+
+    function initScoreState() {
+        return Object.fromEntries(SCORE_KEYS.map((key) => [key, 0]));
+    }
+
+    function initStageScores() {
+        return Object.fromEntries(
+            STAGE_DEFINITIONS.map((stage) => [stage.id, initScoreState()])
+        );
+    }
+
+    function getStageId(question) {
+        const id = question.id;
+        if (id <= 6) return 'imprint';
+        if (id <= 12) return 'pattern';
+        return 'reconstruction';
+    }
+
+    function buildScoreStats(data, weights) {
+        const total = initScoreState();
+        const stages = initStageScores();
+
+        data.forEach((q) => {
+            const stageId = getStageId(q);
+            SCORE_KEYS.forEach((key) => {
+                const maxVal = Math.max(
+                    ...q.options.map((opt) => (opt.score?.[key] || 0) * (weights[key] || 1))
+                );
+                total[key] += maxVal;
+                stages[stageId][key] += maxVal;
+            });
+        });
+
+        return { total, stages };
+    }
+
+    const SCORE_STATS = buildScoreStats(questions, DIMENSION_WEIGHTS);
+
+    function normalizeScores(rawScores, maxScores, scale = 10) {
+        const normalized = {};
+        SCORE_KEYS.forEach((key) => {
+            const max = maxScores[key] || 0;
+            const raw = rawScores[key] || 0;
+            normalized[key] = max > 0 ? Math.round((raw / max) * scale * 10) / 10 : 0;
+        });
+        return normalized;
+    }
+
+    // =========================
+    // 答题引擎 v2.0 (多选支持版)
+    // =========================
     let currentQIndex = 0;
-    let userScores = { secure: 0, anxiety: 0, avoid: 0, trauma: 0, placate: 0, blame: 0, distract: 0, superReason: 0, intrusion: 0, neglect: 0, shame: 0 };
+    let userScores = initScoreState();
+    let stageScores = initStageScores();
     let currentSelections = new Set(); // 用于存储当前题目选中的选项索引
 
     // 初始化加载
@@ -614,7 +711,16 @@
 
         try {
             const parsed = JSON.parse(savedData);
-            userScores = parsed.scores; // 恢复分数
+            userScores = { ...initScoreState(), ...(parsed.scores || {}) }; // 恢复分数
+            stageScores = initStageScores();
+            if (parsed.stageScores) {
+                Object.keys(stageScores).forEach((stageId) => {
+                    stageScores[stageId] = {
+                        ...stageScores[stageId],
+                        ...(parsed.stageScores[stageId] || {}),
+                    };
+                });
+            }
             generateReport(); // 重新生成报告
             
             // 跳转到报告页
@@ -712,10 +818,14 @@
 
         // 计分逻辑：叠加所有选中项的分数
         const q = questions[currentQIndex];
+        const stageId = getStageId(q);
         currentSelections.forEach(optIndex => {
-            const scores = q.options[optIndex].score;
+            const scores = q.options[optIndex].score || {};
             for (let key in scores) {
-                userScores[key] = (userScores[key] || 0) + scores[key];
+                const weight = DIMENSION_WEIGHTS[key] || 1;
+                const delta = scores[key] * weight;
+                userScores[key] = (userScores[key] || 0) + delta;
+                stageScores[stageId][key] = (stageScores[stageId][key] || 0) + delta;
             }
         });
 
@@ -747,7 +857,25 @@
 
 // --- 14. 核心报告生成系统 (v17.0 鲜活生命版：记忆+打字机) ---
     function generateReport() {
-        let scores = {...userScores};
+        const rawScores = { ...initScoreState(), ...userScores };
+        const normalizedStageScores = STAGE_DEFINITIONS.map((stage) =>
+            normalizeScores(stageScores[stage.id] || initScoreState(), SCORE_STATS.stages[stage.id], 10)
+        );
+        const scores = Object.fromEntries(
+            SCORE_KEYS.map((key) => {
+                const values = normalizedStageScores.map((stage) => stage[key] || 0);
+                const avg = values.reduce((sum, val) => sum + val, 0) / Math.max(1, values.length);
+                return [key, Math.round(avg * 10) / 10];
+            })
+        );
+        const stageSummary = STAGE_DEFINITIONS.map((stage) => {
+            const rawStage = stageScores[stage.id] || initScoreState();
+            const maxStage = SCORE_STATS.stages[stage.id];
+            const rawTotal = Object.values(rawStage).reduce((sum, val) => sum + val, 0);
+            const maxTotal = Object.values(maxStage).reduce((sum, val) => sum + val, 0);
+            const intensity = maxTotal > 0 ? Math.round((rawTotal / maxTotal) * 10 * 10) / 10 : 0;
+            return { ...stage, intensity, hasData: rawTotal > 0 };
+        });
         let type = "", title = "", desc = "", advice = "", subType = "";
         let shadow = ""; 
         let monologue = ""; 
@@ -788,7 +916,17 @@
         ).join('');
 
         // --- 1. 算法判定 (保持 v16 的精准逻辑) ---
-        const maxScore = Math.max(scores.secure, scores.anxiety, scores.avoid, scores.trauma);
+        const coreScores = {
+            secure: scores.secure,
+            anxiety: scores.anxiety,
+            avoid: scores.avoid,
+            trauma: scores.trauma,
+        };
+        const sortedCore = Object.entries(coreScores).sort((a, b) => b[1] - a[1]);
+        const [topType, topValue] = sortedCore[0];
+        const [, secondValue] = sortedCore[1] || [];
+        const tieThreshold = 0.8;
+        const isTie = secondValue !== undefined && Math.abs(topValue - secondValue) <= tieThreshold;
 
 // --- 1. 安全型依恋 (The Anchor) —— 关键词：情绪容器、圣母陷阱 ---
         if (scores.secure >= scores.anxiety && scores.secure >= scores.avoid && scores.secure >= scores.trauma) {
@@ -1178,6 +1316,11 @@
             rootStyle.setProperty('--wave-1', '#2D3748'); rootStyle.setProperty('--wave-2', '#4A5568'); rootStyle.setProperty('--wave-3', '#718096');
         }
 
+        if (isTie) {
+            title = `${title} · 混合倾向`;
+            if (!tags.includes("混合型倾向")) tags.push("混合型倾向");
+        }
+
         // --- 切换背景音乐 ---
         if (!AudioEngine.isMuted) {
             AudioEngine.playAmbience(type);
@@ -1187,11 +1330,20 @@
         const scoreBarPalette = ['bg-red-400', 'bg-blue-400', 'bg-green-400', 'bg-purple-400', 'bg-amber-400', 'bg-teal-400', 'bg-rose-400'];
         const scoreBars = radarConfig.map((item, index) => {
             const val = scores[item.key] || 0;
-            const stat = radarDimensionStats[item.key];
-            const percent = stat ? Math.min((val / Math.max(1, stat.max || 1)) * 100, 100) : 0;
+            const percent = Math.min((val / 10) * 100, 100);
             const color = scoreBarPalette[index % scoreBarPalette.length];
-            return `<div class="mb-2 last:mb-0"><div class="flex justify-between text-[10px] text-gray-500 mb-0.5 font-medium"><span>${item.label}</span><span>${val}</span></div><div class="h-1 w-full bg-gray-100 rounded-full overflow-hidden"><div class="h-full ${color} opacity-80" style="width: ${percent}%"></div></div></div>`;
+            return `<div class="mb-2 last:mb-0"><div class="flex justify-between text-[10px] text-gray-500 mb-0.5 font-medium"><span>${item.label}</span><span>${val.toFixed(1)}</span></div><div class="h-1 w-full bg-gray-100 rounded-full overflow-hidden"><div class="h-full ${color} opacity-80" style="width: ${percent}%"></div></div></div>`;
         }).join('');
+
+        const stagePalette = ['bg-blue-400', 'bg-indigo-400', 'bg-emerald-400'];
+        const hasStageData = stageSummary.some((stage) => stage.hasData);
+        const stageBars = hasStageData
+            ? stageSummary.map((stage, index) => {
+                const percent = Math.min((stage.intensity / 10) * 100, 100);
+                const color = stagePalette[index % stagePalette.length];
+                return `<div class="mb-2 last:mb-0"><div class="flex justify-between text-[10px] text-gray-500 mb-0.5 font-medium"><span>${stage.label}</span><span>${stage.intensity.toFixed(1)}</span></div><div class="h-1 w-full bg-gray-100 rounded-full overflow-hidden"><div class="h-full ${color} opacity-80" style="width: ${percent}%"></div></div></div>`;
+            }).join('')
+            : `<div class="text-[11px] text-gray-400">暂无阶段数据</div>`;
 
         // --- 读取七日计划进度 (Memory) ---
         const savedChecks = JSON.parse(localStorage.getItem('originsight_plan_checks') || '[]');
@@ -1219,7 +1371,14 @@
                         <div class="w-full mb-4 flex flex-wrap justify-center content-start min-h-[60px]">
                             ${tagsHTML}
                         </div>
-                        <div class="w-full bg-white/50 rounded-xl p-5 border border-white/40 mt-auto"><h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Dimension Scores</h4>${scoreBars}</div>
+                        <div class="w-full bg-white/50 rounded-xl p-5 border border-white/40 mt-auto">
+                            <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Dimension Scores</h4>
+                            ${scoreBars}
+                        </div>
+                        <div class="w-full bg-white/50 rounded-xl p-5 border border-white/40">
+                            <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Stage Summary</h4>
+                            ${stageBars}
+                        </div>
                     </div>
                 </div>
                 <div class="lg:col-span-8 h-full">
@@ -1355,14 +1514,19 @@
 
         // 触发雷达图 + 打字机特效
         setTimeout(() => {
-            const data = normalizeRadarData(scores);
+            const data = normalizeRadarData(rawScores);
             renderRadarChart(data);
             
             // 触发打字机
             typeWriter('monologue-text', monologue, 60);
         }, 500); 
 
-        localStorage.setItem('originsight_result', JSON.stringify({title, type, scores}));
+        localStorage.setItem('originsight_result', JSON.stringify({
+            title,
+            type,
+            scores: rawScores,
+            stageScores,
+        }));
     }
 
     function switchPage(from, to) {
@@ -1401,7 +1565,7 @@
         );
         questions.forEach((q) => {
             radarConfig.forEach(({ key }) => {
-                const scores = q.options.map((opt) => opt.score?.[key] || 0);
+                const scores = q.options.map((opt) => (opt.score?.[key] || 0) * (DIMENSION_WEIGHTS[key] || 1));
                 stats[key].max += Math.max(...scores);
             });
         });
@@ -1418,7 +1582,7 @@
                 let total = 0;
                 questions.forEach((q) => {
                     const idx = Math.floor(rand() * q.options.length);
-                    total += q.options[idx].score?.[key] || 0;
+                    total += (q.options[idx].score?.[key] || 0) * (DIMENSION_WEIGHTS[key] || 1);
                 });
                 totals.push(total);
             }
@@ -1601,6 +1765,10 @@
         const container = document.getElementById('generated-image-container');
         
         if (!posterEl) return;
+        if (typeof html2canvas !== 'function') {
+            alert("当前环境无法生成图片，请使用截图功能保存。");
+            return;
+        }
 
         // 显示加载提示
         const btn = document.querySelector('button[onclick="generateImage()"] span:last-child');
