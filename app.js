@@ -1,3 +1,120 @@
+    // ================= 纯代码音频合成引擎 (Web Audio API) =================
+    // 不需要任何外部文件，直接用代码生成白噪音
+    // ================= 混合音频引擎 (MP3背景乐 + WebAudio音效) =================
+    const AudioEngine = {
+        ctx: null, // 用于生成扑通声的上下文
+        isMuted: true, // 默认静音
+
+        // 初始化 Web Audio Context (仅用于扑通声)
+        init: function() {
+            if (!this.ctx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                this.ctx = new AudioContext();
+            }
+        },
+
+        // 切换背景音乐播放/暂停
+        toggleMute: function() {
+            this.init(); // 确保音效上下文也初始化
+            this.isMuted = !this.isMuted;
+            
+            const audioTag = document.getElementById('bg-music');
+            const iconMute = document.getElementById('icon-mute');
+            const iconPlay = document.getElementById('icon-play');
+            const audioBtn = document.getElementById('audio-btn');
+
+            if (this.isMuted) {
+                // 静音
+                if(audioTag) audioTag.pause();
+                if(iconMute) iconMute.classList.remove('hidden');
+                if(iconPlay) iconPlay.classList.add('hidden');
+                if(audioBtn) audioBtn.setAttribute('aria-pressed', 'false');
+            } else {
+                // 播放
+                if(audioTag) {
+                   const slider = document.getElementById('volume-slider');
+                    audioTag.volume = slider ? slider.value : 0.2;
+                    const playPromise = audioTag.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => {
+                            console.log("自动播放被阻止，需用户交互:", error);
+                        });
+                    }
+                }
+                
+                // 恢复音效上下文
+                if(this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+
+                if(iconMute) iconMute.classList.add('hidden');
+                if(iconPlay) iconPlay.classList.remove('hidden');
+                if(audioBtn) audioBtn.setAttribute('aria-pressed', 'true');
+            }
+        },
+
+        // 兼容旧代码调用，防止报错 (MP3模式下不需要动态改变环境音，但保留接口)
+        playAmbience: function(type) {
+            // 在 MP3 模式下，这个函数不需要做复杂的白噪音生成
+            // 只需要确保如果没静音，音乐在响即可
+            if (!this.isMuted) {
+                const audioTag = document.getElementById('bg-music');
+                if(audioTag && audioTag.paused) audioTag.play().catch(e=>{});
+            }
+        },
+
+        // 模拟物体落水的声音 (保留之前的 Web Audio API 实现)
+        playSplash: function() {
+            if (this.isMuted) return;
+            this.init();
+            if (this.ctx.state === 'suspended') this.ctx.resume();
+
+            const t = this.ctx.currentTime;
+            
+            // 第一层：冲击音
+            const osc1 = this.ctx.createOscillator();
+            const gainOsc1 = this.ctx.createGain();
+            const filterOsc1 = this.ctx.createBiquadFilter();
+            
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(280, t);
+            osc1.frequency.exponentialRampToValueAtTime(100, t + 0.22);
+            filterOsc1.type = 'lowpass';
+            filterOsc1.frequency.setValueAtTime(1200, t);
+            filterOsc1.frequency.linearRampToValueAtTime(700, t + 0.22);
+            gainOsc1.gain.setValueAtTime(0, t);
+            gainOsc1.gain.linearRampToValueAtTime(0.6, t + 0.04);
+            gainOsc1.gain.exponentialRampToValueAtTime(0.1, t + 0.22);
+            
+            osc1.connect(filterOsc1);
+            filterOsc1.connect(gainOsc1);
+            gainOsc1.connect(this.ctx.destination);
+            osc1.start(t);
+            osc1.stop(t + 0.25);
+            
+            // 第二层：水声共鸣
+            const osc2 = this.ctx.createOscillator();
+            const gainOsc2 = this.ctx.createGain();
+            const filterOsc2 = this.ctx.createBiquadFilter();
+            
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(110, t + 0.07);
+            osc2.frequency.exponentialRampToValueAtTime(45, t + 0.4);
+            filterOsc2.type = 'lowpass';
+            filterOsc2.frequency.setValueAtTime(600, t);
+            filterOsc2.frequency.linearRampToValueAtTime(250, t + 0.35);
+            gainOsc2.gain.setValueAtTime(0, t + 0.07);
+            gainOsc2.gain.linearRampToValueAtTime(0.5, t + 0.12);
+            gainOsc2.gain.exponentialRampToValueAtTime(0.03, t + 0.45);
+            
+            osc2.connect(filterOsc2);
+            filterOsc2.connect(gainOsc2);
+            gainOsc2.connect(this.ctx.destination);
+            osc2.start(t + 0.07);
+            osc2.stop(t + 0.45);
+        },
+    };
+
 // --- 题库 v5.0：灵魂拷问版 (基于“奇幻日”深度逻辑) ---
     const questions = [
         // ==================== 第一阶段：生存策略与家庭结构 (The Imprint) ====================
@@ -239,6 +356,8 @@
         for(let i=0; i<6; i++) setTimeout(spawnWord, i * 600);
         setInterval(spawnWord, 1000);
     });
+
+    window.toggleAudio = function() { AudioEngine.toggleMute(); }
 
     // --- 补上这个缺失的函数，修复浮动字体消失的问题 ---
     function loadSavedReport() {
@@ -1336,6 +1455,18 @@
         
         // 6. (可选) 保存到本地，作为彩蛋
         localStorage.setItem('originsight_bottle', msg);
+    }
+
+    // 放在 <script> 的末尾
+    function changeVolume(val) {
+        const audio = document.getElementById('bg-music');
+        if (audio) {
+            audio.volume = val;
+        }
+        // 拖动滑块时，如果本来是静音，就自动开启声音
+        if (AudioEngine.isMuted && val > 0) {
+            AudioEngine.toggleMute();
+        }
     }
 
     // --- 新增：打字机特效 (让文字逐个浮现) ---
