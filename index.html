@@ -244,6 +244,21 @@
     </main>
 <script>
     // =========================
+    // 安全 localStorage 封装（兼容无痕模式）
+    // =========================
+    const safeStorage = {
+        getItem(key) {
+            try { return window.localStorage.getItem(key); } catch (e) { return null; }
+        },
+        setItem(key, value) {
+            try { window.localStorage.setItem(key, value); } catch (e) { /* 无痕模式静默忽略 */ }
+        },
+        removeItem(key) {
+            try { window.localStorage.removeItem(key); } catch (e) { /* 无痕模式静默忽略 */ }
+        }
+    };
+
+    // =========================
     // 音频引擎 (Web Audio API)
     // =========================
     // ================= 纯代码音频合成引擎 (Web Audio API) =================
@@ -750,7 +765,7 @@
 
     // 初始化加载
     window.addEventListener('load', () => {
-        const savedResult = localStorage.getItem('originsight_result');
+        const savedResult = safeStorage.getItem('originsight_result');
         const btn = document.getElementById('nav-btn');
         if (savedResult && btn) {
             btn.innerText = "查看上次报告";
@@ -768,7 +783,7 @@
 
     // --- 补上这个缺失的函数，修复浮动字体消失的问题 ---
     function loadSavedReport() {
-        const savedData = localStorage.getItem('originsight_result');
+        const savedData = safeStorage.getItem('originsight_result');
         if (!savedData) return;
 
         try {
@@ -791,7 +806,7 @@
             window.scrollTo(0,0);
         } catch (e) {
             console.error("存档损坏", e);
-            localStorage.removeItem('originsight_result');
+            safeStorage.removeItem('originsight_result');
             location.reload();
         }
     }
@@ -942,8 +957,10 @@
         let shadow = ""; 
         let monologue = ""; 
         let mechanism = ""; 
-        let harm = "";      
         let relapse = "";   
+        let analysis = "";
+        let origin = "";
+        let prescription = [];
         
 let chemistry = { magnet: "", magnetDesc: "", healing: "", healingDesc: "" };
 let manual = { dos: [], donts: [] };
@@ -952,6 +969,7 @@ let sevenDays = [];
 // 初始化童年场景和信念数据
         let childhoodScenes = [];
         let beliefData = { oldBeliefs: [], newBeliefs: [], affirmation: "" };
+        let detailedType = 'secure';
 
 // 数据库定义
 const CHILDHOOD_SCENES_DB = {
@@ -1074,6 +1092,12 @@ const BELIEF_RECONSTRUCTION_DB = {
                 你拥有令人羡慕的<b>“情绪免疫系统”</b>。
                 <br><br>
                 在关系中，你的杏仁核（大脑恐惧中心）拥有极高的阈值。面对冲突，你不会像焦虑型那样陷入“被抛弃的恐慌”，也不会像回避型那样启动“情感隔离”。你能直接调用前额叶（理智中心）去解决问题。你潜意识里的核心信条是：<b>“冲突是沟通的契机，而不是关系的末日。”</b>
+                <br><br>
+                <b>🧠 神经层面的解读：</b>你的迷走神经张力高于平均水平，这意味着你拥有更强的情绪调节能力。当伴侣发脾气时，你的心率不会飙升到130——你能保持在“社交参与”状态（Stephen Porges的多迷走神经理论），而非被恐惧激活到“战或逃”模式。这种生理优势让你成为关系中天然的“定海神针”。
+                <br><br>
+                <b>💡 行为模式透视：</b>你在关系中展现出罕见的<b>“安全悖论”</b>——正因为你不害怕失去，所以你反而能全身心地投入。你不需要通过查手机、反复确认来缓解焦虑，也不需要通过情感撤退来保护自己。你的爱是自由的、松弛的、不附带条件的。你能坦然地说“我需要你”，也能平静地接受“我们需要各自独处一会儿”。
+                <br><br>
+                <b>⚡ 隐藏的代价：</b>然而，你的情绪稳定也带来了一个盲区——你很难理解为什么别人不能像你一样“正常”地处理情绪。你可能会低估创伤对他人的影响，无意中把“你想太多了”当作安慰——而这恰恰是受伤的人最不想听到的话。你的共情力不在于“感同身受”，而在于“理性陪伴”，但有些时刻，对方需要的不是解决方案，只是一个沉默的拥抱。
             `;
             
             // 2. 根源回溯：恰如其分的回应
@@ -1139,6 +1163,12 @@ const BELIEF_RECONSTRUCTION_DB = {
                 你的内心住着一个<b>“全天候哨兵”</b>。
                 <br><br>
                 你既极度渴望亲密，又本能地恐惧伤害。这种<b>“想靠近却想逃离”</b>的悖论，让你在关系中反复撕裂。你会下意识地通过推拉、试探甚至制造混乱（Drama）来测试对方的底线。你的核心防御是<b>“先发制人的抛弃”</b>——在对方可能离开我之前，我先搞砸这段关系，这样我就不用面对被抛弃的恐惧了。
+                <br><br>
+                <b>🧠 神经系统的战争：</b>你的自主神经系统长期处于<b>“背侧迷走神经”与“交感神经”</b>之间的拉锯战。用通俗的话说——你的身体同时踩着油门（靠近的渴望）和刹车（逃离的恐惧）。这就是为什么你在一段关系中经常感到精疲力竭：不是对方消耗了你，而是你自己的内部冲突在24小时不间断地燃烧你的能量。
+                <br><br>
+                <b>💡 关系中的具体表现：</b>你可能在热恋期表现得极度投入、充满激情，恨不得和对方融为一体。但当关系稳定下来，你反而开始恐慌——因为稳定意味着“有东西可以失去了”。于是你开始挑刺、冷战、制造冲突，试图通过对方的反应来确认“他是不是真的在乎我”。你的潜意识逻辑是：<b>“如果我在最糟糕的时候他还不走，那他才是真的爱我。”</b>
+                <br><br>
+                <b>⚡ 身体的记忆：</b>你可能经常感到莫名的胸闷、呼吸浅促、肌肉紧绷或胃部不适。这些不是“矫情”，而是你的身体在忠实地记录着童年的恐惧。你的神经系统被校准到了“随时准备逃跑”的频率，哪怕理智上你知道眼前的人是安全的。创伤的记忆不住在大脑里，它住在你的身体里（Bessel van der Kolk: <i>The Body Keeps the Score</i>）。
             `;
             
             // 2. 根源回溯：情感绞肉机
@@ -1207,6 +1237,12 @@ const BELIEF_RECONSTRUCTION_DB = {
                     你的温良恭俭让，其实是一种<b>“生存假象” (Survival Illusion)</b>。
                     <br><br>
                     在外人眼里你是完美的“好人”，但只有你自己知道，这种“好”是基于恐惧而非选择。你对冲突有生理性的厌恶，一旦感受到气氛不对，你会下意识地通过自我牺牲、道歉或迎合来“平事”。你所谓的“懂事”，其实是<b>生命力荒芜</b>的代词。
+                    <br><br>
+                    <b>🧠 讨好的神经回路：</b>在你的大脑中，“别人不高兴”和“我即将被抛弃”之间建立了一条高速公路。这是童年反复训练的结果——当你还是小孩时，父母的不悦直接意味着生存威胁。所以现在，哪怕只是同事的一句冷漠回应，你的杏仁核都会拉响<b>“红色警报”</b>，驱使你立刻启动讨好程序：道歉、迎合、自我贬低，直到对方的表情缓和，你才能松一口气。
+                    <br><br>
+                    <b>💡 你的“好”有多贵：</b>你可能从未意识到，讨好是世界上最昂贵的生存策略。你为它支付的价格包括：永远不知道自己真正喜欢什么（因为你的每个选择都是为了让别人满意）；无法建立真正的亲密关系（因为对方爱的是那个“假我”）；以及一种弥漫在生命深处的<b>空洞感</b>——你不知道剥掉“好人”这层壳之后，里面还有没有一个“我”。
+                    <br><br>
+                    <b>⚡ 被压抑的火山：</b>别被你表面的温顺骗了。在你“好脾气”的地壳下面，积压着一座愤怒的岩浆。你可能偶尔在某个无关紧要的瞬间突然情绪崩溃——为了一件小事嚎啕大哭，或者对最亲近的人莫名发火。那不是“小题大做”，而是你压抑了十几年的攻击性终于找到了裂缝。心理学上叫它<b>“被动攻击”(Passive Aggression)</b>——你不敢正面表达愤怒，所以它化装成遗忘、拖延、沉默或“无意间”的伤害。
                 `;
                 
                 // 2. 根源回溯
@@ -1268,6 +1304,12 @@ const BELIEF_RECONSTRUCTION_DB = {
                     你像是一株必须依附大树才能生存的藤蔓。在亲密关系中，你最核心的痛点是<b>“融合焦虑”</b>。
                     <br><br>
                     你把伴侣视为抵御内心虚无的<b>“活体载体”</b>。一旦对方回复消息慢了，或者语气稍微冷淡，你就会瞬间陷入一种“由于被切断连接而导致的自我消亡感”。你的情绪开关完全掌握在别人手里：他高兴你就晴天，他皱眉你就地震。这不仅是爱，更是一种<b>“共生绞杀”</b>。
+                    <br><br>
+                    <b>🧠 空心人综合征：</b>你最大的秘密是——当你独处时，你不知道自己是谁。没有人需要你拯救的时刻，你反而会感到巨大的虚空。你的自我认同完全建立在<b>“被需要”</b>之上：我照顾你，所以我存在。这就是为什么你会本能地被那些“破碎的人”吸引——他们的痛苦让你有了存在的意义。一旦对方变得健康、独立，你反而会焦虑，甚至潜意识地破坏对方的成长。
+                    <br><br>
+                    <b>💡 焦虑发作的真相：</b>当你不断查看手机、反复发消息确认对方是否还在时，你以为自己在表达爱，但本质上你在做的事情和童年时盯着母亲的脸色完全一样——<b>扫描威胁</b>。你的大脑把“对方2小时没回消息”等同于“我被遗弃了”，这不是逻辑判断，而是一种来自5岁时的<b>身体记忆</b>。你的焦虑不是针对眼前这个人的，它是你童年的创伤在当下的<b>闪回 (Flashback)</b>。
+                    <br><br>
+                    <b>⚡ 牺牲的成瘾性：</b>你对“为别人付出”有一种类似成瘾的依赖。每次你为别人牺牲时，大脑会释放一波内啡肽——那种“我是好人、我有价值”的短暂快感。但和所有成瘾一样，阈值会越来越高：你需要付出更多、牺牲更多，才能感受到同样的存在感。直到有一天，你透支了所有的能量，身体和精神同时崩溃，却发现你拼命拯救的那些人，没有一个能接住你。
                 `;
                 
                 // 2. 根源回溯
@@ -1339,6 +1381,12 @@ const BELIEF_RECONSTRUCTION_DB = {
                     你像是一座移动的冰山。在你的世界里，<b>“感受”</b>被视为一种低效甚至软弱的表现。
                     <br><br>
                     你擅长处理数据、解决问题，但当涉及情感交流时，你会自动“断电”或切换到“说教模式”。你引以为傲的冷静，其实是一种<b>“情感无能”</b>。你习惯用逻辑把人<b>“物化”</b>，分析利弊得失，却唯独看不见活生生的人心。
+                    <br><br>
+                    <b>🧠 大脑的逃生通道：</b>当情绪来临时，你的大脑会执行一套精密的“转移程序”：先把感受拦截在意识层面之外，然后迅速将其翻译成“概念”和“分析”。比如，当你失恋时，你不会允许自己悲伤，而是会说“从统计学角度看，这段关系的性价比确实很低”。这不是你天生冷血——这是你在童年学会的<b>求生技能</b>。当表达情绪意味着被惩罚时，把情绪转化为思考就成了唯一安全的出口。
+                    <br><br>
+                    <b>💡 述情障碍 (Alexithymia)：</b>你可能有轻度到中度的<b>述情障碍</b>——不是你不愿意表达感受，而是你真的<b>识别不出</b>自己在感受什么。当别人问“你现在什么心情”，你脑海里一片空白，或者只能给出“还行”“一般”这类模糊的回答。你的情绪词汇表可能只有“好”“不好”“烦”三个词，而一个情绪健康的人至少能识别出几十种不同的情感。
+                    <br><br>
+                    <b>⚡ 身体在替你感受：</b>你压抑的情绪不会消失，它们只是换了一个出口——你的身体。你可能经常头痛、失眠、胃酸过多、肩颈僵硬或不明原因的疲倦。这些都是<b>“躯体化”(Somatization)</b>的表现：你的身体在替你哭泣，因为你的眼睛不被允许。你越是“理性”，你的身体越是诚实。
                 `;
                 
                 // 2. 根源回溯
@@ -1381,6 +1429,12 @@ const BELIEF_RECONSTRUCTION_DB = {
                     你以“不需要任何人”为荣。你的独立令人钦佩，但那是一枚刻着伤痕的勋章——<b>“假性独立” (Pseudo-independence)</b>。
                     <br><br>
                     你不是真的不需要爱，你是<b>“不敢”</b>需要。你预设了“所有人最终都会离开”或“没有人能真正理解我”，所以你选择先拒绝别人。你把自己活成了一座孤岛，虽然安全，但寸草不生。
+                    <br><br>
+                    <b>🧠 情感冰封的生理学：</b>你的大脑在“依恋系统”上做了一个<b>软件级别的屏蔽</b>。当正常人感到孤独时，大脑会释放催产素驱使他们去寻求连接；而你的大脑在同样的信号到来时，会<b>直接压制它</b>，然后释放多巴胺引导你去做“有生产力的事”——工作、健身、看书、打游戏。你以为自己“享受独处”，但其实你只是在用忙碌麻醉孤独。
+                    <br><br>
+                    <b>💡 “无人岛”的日常：</b>你在社交中看起来正常甚至很受欢迎——但你心里清楚，你和所有人之间都隔着一层玻璃。你可以聊天、可以合作、甚至可以恋爱，但你从不让任何人真正触碰你的内核。你有一条看不见的<b>“安全线”</b>：一旦关系走到某个深度，你就会本能地后撤——变得忙碌、变得挑剔、变得冷淡，直到对方知难而退。然后你松一口气，告诉自己“果然，没有人能坚持到最后”。
+                    <br><br>
+                    <b>⚡ 深夜的真实：</b>但在某些深夜——也许是加班到凌晨回到空荡荡的房间时，也许是看到一对老夫妻牵手走过时——你会被一股无法命名的悲伤击中。那个瞬间，你那座精心构建的“我不需要任何人”的堡垒，会出现一道细小的裂缝。但你会迅速用理性把它补上，告诉自己“我只是累了”。那道裂缝，就是你内心那个五岁小孩在敲门。他不想要你的成功，他只想要一个拥抱。
                 `;
                 
                 // 2. 根源回溯
@@ -1456,16 +1510,17 @@ const BELIEF_RECONSTRUCTION_DB = {
 
 
         // 确定详细类型
-        let detailedType = 'secure';
-        if (type === 'anxiety') {
+        if (type === 'secure') {
+            detailedType = 'secure';
+        } else if (type === 'fearful') {
+            detailedType = 'fearful';
+        } else if (type === 'anxiety') {
             detailedType = (scores.placate || 0) > (scores.rescuer || 0) ? 'anxiety_pleaser' : 'anxiety_rescuer';
         } else if (type === 'avoid') {
             detailedType = (scores.superReason || 0) > ((scores.avoid || 0) * 0.5) ? 'avoid_rationalizer' : 'avoid_dismissive';
-        } else if (type === 'fearful') {
-            detailedType = 'fearful';
         }
-        childhoodScenes = CHILDHOOD_SCENES_DB[detailedType] || CHILDHOOD_SCENES_DB.secure;
-        beliefData = BELIEF_RECONSTRUCTION_DB[detailedType] || BELIEF_RECONSTRUCTION_DB.secure;
+        childhoodScenes = CHILDHOOD_SCENES_DB[detailedType] || [];
+        beliefData = BELIEF_RECONSTRUCTION_DB[detailedType] || { oldBeliefs: [], newBeliefs: [], affirmation: "" };
 
 
         // --- 切换背景音乐 ---
@@ -1493,12 +1548,12 @@ const BELIEF_RECONSTRUCTION_DB = {
             : `<div class="text-[11px] text-gray-400">暂无阶段数据</div>`;
 
         // --- 读取七日计划进度 (Memory) ---
-        const savedChecks = JSON.parse(localStorage.getItem('originsight_plan_checks') || '[]');
+        const savedChecks = JSON.parse(safeStorage.getItem('originsight_plan_checks') || '[]');
         
         // --- 渲染页面 (UI v17.0) ---
         const container = document.getElementById('report-content');
-        const books = type === 'secure' ? ["《爱的艺术》", "《少有人走的路》"] : (type === 'anxiety' ? ["《不再试图取悦别人》", "《走出强迫性重复》"] : ["《假性亲密关系》", "《被忽视的孩子》"]);
-        const movies = type === 'secure' ? ["《普罗旺斯的夏天》"] : (type === 'anxiety' ? ["《被嫌弃的松子的一生》", "《黑天鹅》"] : ["《心灵捕手》", "《海边的曼彻斯特》"]);
+        const books = type === 'secure' ? ["《爱的艺术》", "《少有人走的路》"] : (type === 'fearful' ? ["《身体从未忘记》", "《复杂PTSD：从存活到繁盛》"] : (type === 'anxiety' ? ["《不再试图取悦别人》", "《走出强迫性重复》"] : ["《假性亲密关系》", "《被忽视的孩子》"]));
+        const movies = type === 'secure' ? ["《普罗旺斯的夏天》"] : (type === 'fearful' ? ["《心灵捕手》", "《房间》"] : (type === 'anxiety' ? ["《被嫌弃的松子的一生》", "《黑天鹅》"] : ["《心灵捕手》", "《海边的曼彻斯特》"]));
 
 // ✅ 修复后的报告模板：正确引用了 analysis, origin, shadow 等新变量
         container.innerHTML = `
@@ -1741,7 +1796,7 @@ const BELIEF_RECONSTRUCTION_DB = {
             typeWriter('monologue-text', monologue, 60);
         }, 500); 
 
-        localStorage.setItem('originsight_result', JSON.stringify({
+        safeStorage.setItem('originsight_result', JSON.stringify({
             title,
             type,
             scores: rawScores,
@@ -2072,25 +2127,25 @@ const BELIEF_RECONSTRUCTION_DB = {
         // 5. 制造一点波浪涟漪 (丝滑加速和恢复)
         const waves = document.querySelectorAll('.wave-layer');
         
-        // 改变播放速率（添加前缀支持）
-        waves.forEach((w) => {
-            // 设置多个属性名以确保浏览器兼容性
-            w.style.setProperty('animation-play-rate', '3', '');
-            w.style.setProperty('-webkit-animation-play-rate', '3', '');
+        // 保存原始 duration 并加速波浪
+        const originalDurations = [];
+        waves.forEach((w, i) => {
+            originalDurations[i] = w.style.animationDuration || getComputedStyle(w).animationDuration;
+            const currentSec = parseFloat(originalDurations[i]) || 12;
+            w.style.animationDuration = (currentSec / 3) + 's';
         });
         
         setTimeout(() => {
-            // 平滑恢复到正常速度
-            waves.forEach((w) => {
-                w.style.setProperty('animation-play-rate', '1', '');
-                w.style.setProperty('-webkit-animation-play-rate', '1', '');
+            // 恢复原始速度
+            waves.forEach((w, i) => {
+                w.style.animationDuration = originalDurations[i];
             });
             bottle.remove(); // 清理元素
             input.disabled = false; // 恢复输入框
         }, 1500);
         
         // 6. (可选) 保存到本地，作为彩蛋
-        localStorage.setItem('originsight_bottle', msg);
+        safeStorage.setItem('originsight_bottle', msg);
     }
 
     // 放在 <script> 的末尾
@@ -2135,7 +2190,7 @@ const BELIEF_RECONSTRUCTION_DB = {
     // --- 更新：七日计划打卡 (带记忆功能) ---
     function toggleDailyTask(el, index) {
         // 读取当前进度
-        let savedChecks = JSON.parse(localStorage.getItem('originsight_plan_checks') || '[]');
+        let savedChecks = JSON.parse(safeStorage.getItem('originsight_plan_checks') || '[]');
         const dot = el.querySelector('div > div');
         const text = el.querySelector('span');
         
@@ -2161,7 +2216,7 @@ const BELIEF_RECONSTRUCTION_DB = {
         }
         
         // 保存回本地
-        localStorage.setItem('originsight_plan_checks', JSON.stringify(savedChecks));
+        safeStorage.setItem('originsight_plan_checks', JSON.stringify(savedChecks));
         
         // 更新进度条文字 (可选)
         const progressText = document.getElementById('plan-progress-text');
@@ -2172,18 +2227,18 @@ const BELIEF_RECONSTRUCTION_DB = {
 
 </script>
 
-<div id="image-modal" class="fixed inset-0 z-[100] bg-black/90 hidden flex flex-col items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300">
+<div id="image-modal" class="fixed inset-0 z-[100] bg-black/90 hidden flex flex-col items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300" onclick="if(event.target===this)closeImageModal()">
     <div class="relative w-full max-w-sm bg-transparent flex flex-col items-center">
-        <button onclick="closeImageModal()" class="absolute -top-12 right-0 text-white/80 hover:text-white text-sm bg-white/10 px-4 py-2 rounded-full backdrop-blur-md transition">
-            ✕ 关闭
-        </button>
-        
         <div id="generated-image-container" class="w-full rounded-2xl overflow-hidden shadow-2xl border border-white/20">
             </div>
 
         <p class="text-white/60 text-sm mt-6 animate-pulse">
             👆 长按上方图片即可保存 / 分享
         </p>
+        
+        <button onclick="closeImageModal()" class="mt-6 text-white/90 hover:text-white text-sm bg-white/15 hover:bg-white/25 px-6 py-2.5 rounded-full backdrop-blur-md transition-all duration-300 border border-white/20">
+            ✕ 关闭
+        </button>
     </div>
 </div>
 </body>
