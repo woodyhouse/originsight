@@ -155,7 +155,8 @@
         </div>
     </nav>
 
-    <main id="page-landing" class="flex-1 relative z-10 flex flex-col items-center justify-center min-h-screen px-6 text-center">
+    <main id="main-content" class="flex-1 relative z-10">
+    <section id="page-landing" class="flex flex-col items-center justify-center min-h-screen px-6 text-center">
         <div class="fade-in-up">
             <span class="inline-block py-1 px-3 rounded-full bg-gray-100 text-gray-500 text-xs font-bold tracking-widest mb-6">PERSONALITY & ORIGIN</span>
             <h1 class="text-5xl md:text-7xl font-bold mb-6 text-[#2c3e50] leading-tight">看见自己，<br>是改变的开始。</h1>
@@ -170,28 +171,28 @@
                 开始深度测评
             </button>
         </div>
-    </main>
+    </section>
 
-    <main id="page-quiz" class="hidden flex-1 relative z-10 pt-24 pb-12 min-h-screen flex flex-col">
+    <section id="page-quiz" class="hidden pt-24 pb-12 min-h-screen flex flex-col">
         <div class="fixed top-0 left-0 w-full h-1.5 bg-gray-200 z-[60]">
             <div id="progress-bar" class="h-full bg-[#5B7C99] w-0"></div>
         </div>
         <div class="max-w-2xl mx-auto w-full px-6 flex-1 flex flex-col justify-center">
             <div id="quiz-container" class="relative"></div>
         </div>
-    </main>
+    </section>
 
-    <main id="page-loading" class="hidden flex-1 relative z-10 flex flex-col items-center justify-center min-h-screen bg-white">
+    <section id="page-loading" class="hidden flex flex-col items-center justify-center min-h-screen bg-white">
         <div class="w-16 h-16 border-4 border-gray-100 border-t-[#5B7C99] rounded-full animate-spin mb-8"></div>
         <h2 class="text-2xl font-bold text-[#2c3e50] mb-2 fade-in-up">正在连接潜意识...</h2>
         <p id="loading-text" class="text-gray-400 font-mono text-sm fade-in-up delay-100">Analyzing Attachment Patterns...</p>
-    </main>
+    </section>
 
-    <main id="page-report" class="hidden flex-1 relative z-10 pt-24 pb-20 px-6 min-h-screen transition-colors duration-1000">
+    <section id="page-report" class="hidden pt-24 pb-20 px-6 min-h-screen transition-colors duration-1000">
         <div class="max-w-6xl mx-auto" id="report-content"></div>
-    </main>
+    </section>
 
-    <main id="page-theory" class="hidden flex-1 relative z-10 pt-24 pb-20 px-6 min-h-screen">
+    <section id="page-theory" class="hidden pt-24 pb-20 px-6 min-h-screen">
         <div class="max-w-3xl mx-auto bg-white/80 backdrop-blur-md rounded-3xl p-8 md:p-12 shadow-xl border border-white/60">
             <button onclick="closeOverlay('page-theory')" class="mb-6 text-sm text-[#5B7C99] hover:underline flex items-center gap-1">
                 ← 返回
@@ -213,9 +214,9 @@
                 </div>
             </div>
         </div>
-    </main>
+    </section>
 
-    <main id="page-privacy" class="hidden flex-1 relative z-10 pt-24 pb-20 px-6 min-h-screen">
+    <section id="page-privacy" class="hidden pt-24 pb-20 px-6 min-h-screen">
         <div class="max-w-3xl mx-auto bg-white/80 backdrop-blur-md rounded-3xl p-8 md:p-12 shadow-xl border border-white/60">
             <button onclick="closeOverlay('page-privacy')" class="mb-6 text-sm text-[#5B7C99] hover:underline flex items-center gap-1">
                 ← 返回
@@ -236,6 +237,7 @@
                 <p><strong>3. 源代码透明：</strong> 页面代码完全运行在您的浏览器中，您可以随时审查代码逻辑。</p>
             </div>
         </div>
+    </section>
     </main>
 <script>
     // ================= 纯代码音频合成引擎 (Web Audio API) =================
