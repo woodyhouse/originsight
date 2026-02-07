@@ -1177,15 +1177,12 @@
 
         // --- 评分条 ---
         const scoreBarPalette = ['bg-red-400', 'bg-blue-400', 'bg-green-400', 'bg-purple-400', 'bg-amber-400', 'bg-teal-400', 'bg-rose-400'];
-        const scoreBarItems = radarConfig.map((item) => ({
-            ...item,
-            val: scores[item.key] || 0
-        })).sort((a, b) => b.val - a.val);
-        const scoreBars = scoreBarItems.map((item, index) => {
-            const stat = getRadarDimensionStats()[item.key];
-            const percent = stat ? Math.min((item.val / Math.max(1, stat.max || 1)) * 100, 100) : 0;
+        const scoreBars = radarConfig.map((item, index) => {
+            const val = scores[item.key] || 0;
+            const stat = radarDimensionStats[item.key];
+            const percent = stat ? Math.min((val / Math.max(1, stat.max || 1)) * 100, 100) : 0;
             const color = scoreBarPalette[index % scoreBarPalette.length];
-            return `<div class="mb-2 last:mb-0"><div class="flex justify-between text-[10px] text-gray-500 mb-0.5 font-medium"><span>${item.label}</span><span>${item.val}</span></div><div class="h-1 w-full bg-gray-100 rounded-full overflow-hidden"><div class="h-full ${color} opacity-80" style="width: ${percent}%"></div></div></div>`;
+            return `<div class="mb-2 last:mb-0"><div class="flex justify-between text-[10px] text-gray-500 mb-0.5 font-medium"><span>${item.label}</span><span>${val}</span></div><div class="h-1 w-full bg-gray-100 rounded-full overflow-hidden"><div class="h-full ${color} opacity-80" style="width: ${percent}%"></div></div></div>`;
         }).join('');
 
         // --- 读取七日计划进度 (Memory) ---
@@ -1406,7 +1403,7 @@
             seed = (seed * 1664525 + 1013904223) % 4294967296;
             return seed / 4294967296;
         };
-        const sampleCount = Math.min(5000, Math.max(1200, questions.length * 200));
+        const sampleCount = 2000;
         radarConfig.forEach(({ key }) => {
             const totals = [];
             for (let i = 0; i < sampleCount; i += 1) {
@@ -1422,7 +1419,6 @@
         });
         return stats;
     })();
-    const getRadarDimensionStats = () => window.radarDimensionStatsOverride || radarDimensionStats;
     let lastRadarData = null;
     let radarResizeObserver = null;
 
@@ -1444,7 +1440,7 @@
     function normalizeRadarData(scores) {
         const clamp = (val) => Math.max(0, Math.min(val, 1));
         return radarConfig.map(({ key }) => {
-            const stat = getRadarDimensionStats()[key];
+            const stat = radarDimensionStats[key];
             const raw = scores[key] || 0;
             if (!stat) return 0;
             if (stat.samples.length) {
@@ -1520,14 +1516,12 @@
         ctx.fillStyle = grad; ctx.fill(); ctx.strokeStyle = '#5B7C99'; ctx.lineWidth = 2; ctx.stroke();
 
         ctx.fillStyle = '#fff'; points.forEach(p => { ctx.beginPath(); ctx.arc(p.x,p.y,3,0,Math.PI*2); ctx.fill(); ctx.stroke(); });
-        const showAllLabels = w >= 320;
-        const labelFontSize = Math.max(8, Math.min(12, Math.floor(w / (sides + 7))));
+        const labelFontSize = Math.max(9, Math.min(12, Math.floor(w / (sides + 6))));
         const labelOffset = Math.min(16, Math.max(6, Math.floor(radius * 0.1)));
         ctx.fillStyle = '#64748b';
         ctx.font = `bold ${labelFontSize}px Noto Serif SC`;
         ctx.textBaseline = 'middle';
         labels.forEach((l, i) => {
-            if (!showAllLabels && i % 2 === 1) return;
             const a = (Math.PI*2*i)/sides - Math.PI/2;
             const cos = Math.cos(a);
             const sin = Math.sin(a);
