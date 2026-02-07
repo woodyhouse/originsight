@@ -614,7 +614,7 @@
             generateReport(); // 重新生成报告
             
             // 跳转到报告页
-            document.querySelectorAll('main').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('main > section').forEach(el => el.classList.add('hidden'));
             document.getElementById('page-report').classList.remove('hidden');
             window.scrollTo(0,0);
         } catch (e) {
@@ -1564,7 +1564,7 @@
     // 打开某个页面（覆盖当前内容）
     function openPage(pageId) {
         // 隐藏所有 main 标签
-        document.querySelectorAll('main').forEach(el => {
+        document.querySelectorAll('main > section').forEach(el => {
             if(!el.classList.contains('hidden')) {
                 el.dataset.active = 'true'; // 标记一下当前正在显示的页面，以便返回
                 el.classList.add('hidden');
@@ -1583,7 +1583,7 @@
         document.getElementById(pageId).classList.add('hidden');
         
         // 尝试找回刚才标记为 active 的页面，如果找不到就回首页
-        let prevPage = document.querySelector('main[data-active="true"]');
+        let prevPage = document.querySelector('main > section[data-active="true"]');
         if (!prevPage) prevPage = document.getElementById('page-landing');
         
         prevPage.classList.remove('hidden');
