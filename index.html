@@ -1176,15 +1176,13 @@
         }
 
         // --- 评分条 ---
-        const scoreBars = [
-            { k: 'anxiety', label: '焦虑', color: 'bg-red-400' },
-            { k: 'avoid', label: '回避', color: 'bg-blue-400' },
-            { k: 'secure', label: '安全', color: 'bg-green-400' },
-            { k: 'trauma', label: '创伤', color: 'bg-purple-400' }
-        ].map(item => {
-            const val = scores[item.k] || 0;
-            const percent = Math.min((val / 40) * 100, 100); 
-            return `<div class="mb-2 last:mb-0"><div class="flex justify-between text-[10px] text-gray-500 mb-0.5 font-medium"><span>${item.label}</span><span>${val}</span></div><div class="h-1 w-full bg-gray-100 rounded-full overflow-hidden"><div class="h-full ${item.color} opacity-80" style="width: ${percent}%"></div></div></div>`;
+        const scoreBarPalette = ['bg-red-400', 'bg-blue-400', 'bg-green-400', 'bg-purple-400', 'bg-amber-400', 'bg-teal-400', 'bg-rose-400'];
+        const scoreBars = radarConfig.map((item, index) => {
+            const val = scores[item.key] || 0;
+            const stat = radarDimensionStats[item.key];
+            const percent = stat ? Math.min((val / Math.max(1, stat.max || 1)) * 100, 100) : 0;
+            const color = scoreBarPalette[index % scoreBarPalette.length];
+            return `<div class="mb-2 last:mb-0"><div class="flex justify-between text-[10px] text-gray-500 mb-0.5 font-medium"><span>${item.label}</span><span>${val}</span></div><div class="h-1 w-full bg-gray-100 rounded-full overflow-hidden"><div class="h-full ${color} opacity-80" style="width: ${percent}%"></div></div></div>`;
         }).join('');
 
         // --- 读取七日计划进度 (Memory) ---
